@@ -9,6 +9,38 @@ let thirdSpace = date.indexOf(' ', secondSpace + 1);
 let month = date.slice(firstSpace + 1, secondSpace);
 let day = date.slice(secondSpace + 1, thirdSpace);
 let year = date.slice(thirdSpace + 1);
+
+function getDataFromLocalStorage() {
+    const storedData = localStorage.getItem('listOfProjects');
+    return storedData ? JSON.parse(storedData) : [];
+};
+function saveDataToLocalStorage() {
+    localStorage.setItem('listOfProjects', JSON.stringify(listOfProjects));
+};
+
+listOfProjects = getDataFromLocalStorage();
+function renderSideBarProjects(){
+    for(let i = 0; i < listOfProjects.length; i++){
+        let theListItem = document.createElement('li');
+        const theName = document.createElement('button');
+        theName.classList.add('theName');
+        theName.textContent = listOfProjects[i].projectName;
+        theListItem.appendChild(theName);
+        const editButton = document.createElement('img');
+        editButton.src = '../img/dots-vertical.png';
+        editButton.classList.add('editButton');
+        theListItem.appendChild(editButton);
+        theListItem.classList.remove('listItemEdit');
+        theListItem.classList.add('listItem');
+        projectList.appendChild(theListItem);
+        establishEditDelete();
+        openProject();
+        listOfProjects.push(createProject(listOfProjects[i]));
+        saveDataToLocalStorage();
+        assignID();
+    };
+};
+
 // Initial page layout
 const { sideBar, allTask, today, next7, important, addButton, projectList, addProjectDiv} = sideBarButtons();
 const container = document.querySelector('#content');
@@ -21,6 +53,12 @@ container.appendChild(mainHeader);
 container.appendChild(sideBar);
 container.appendChild(centerContainer);
 
+const createProject = function(projectName){
+    let taskList = [];
+    return {projectName, taskList};
+};
+
+renderSideBarProjects();
 allTask.addEventListener('click', function(){
     let tasks = findTasks();
     centerContainer.textContent = '';
@@ -136,10 +174,7 @@ addProjectDiv.addEventListener('click', function(){
     projectList.appendChild(listItem);
     inputConfirmation();
 });
-const createProject = function(projectName){
-    let taskList = [];
-    return {projectName, taskList};
-};
+
 function openProjectInputting(listItem){
    let addingDiv = document.createElement('div');
    addingDiv.id = 'addingDiv';
@@ -187,6 +222,7 @@ function inputConfirmation(){
             establishEditDelete();
             openProject();
             listOfProjects.push(createProject(inputted));
+            saveDataToLocalStorage();
             assignID();
         });
     });
@@ -271,6 +307,7 @@ function deleteItem(listItem) {
                 });
             };
             listOfProjects.splice(listItem.id, 1);
+            saveDataToLocalStorage();
             assignID();
         });
     });
@@ -479,6 +516,7 @@ function editTask(listItem, editButton){
 function deleteTask(button, listItem){
     button.addEventListener('click', function(){
         listOfProjects[Number(listItem.getAttribute('parent'))].taskList.splice(listItem.id, 1);
+        saveDataToLocalStorage();
         let list = listItem.parentElement;
         let parent = listItem.getAttribute('parent');
         list.removeChild(listItem);
@@ -491,6 +529,7 @@ function renameTask(button, listItem){
         let description = listOfProjects[listItem.getAttribute('parent')].taskList[listItem.id].descriptionText;
         let date = listOfProjects[listItem.getAttribute('parent')].taskList[listItem.id].dateText;
         listOfProjects[listItem.getAttribute('parent')].taskList.splice(listItem.id, 1);
+        saveDataToLocalStorage();
         listItem.textContent = '';
         listItem.classList.remove('taskListItem');
         listItem.classList.add('taskListItemForm');
@@ -529,6 +568,7 @@ function establishTaskSubmit(formDiv, listItem){
             let parent = listItem.getAttribute('parent');
             let list = listItem.parentElement;
             listOfProjects[listItem.getAttribute('parent')].taskList.push({titleText, descriptionText, dateText, starred, parent});
+            saveDataToLocalStorage();
                 if(centerContainer.id[0] === 'a'){
                     let tasks = findTasks();
                     if(tasks.length !== 0){
@@ -595,6 +635,7 @@ function establishTaskSubmit(formDiv, listItem){
         else{
             let parent = centerContainer.id;
             listOfProjects[centerContainer.id].taskList.push({titleText, descriptionText, dateText, starred, parent});
+            saveDataToLocalStorage();
             let tasks = listOfProjects[centerContainer.id].taskList;
             let list = listItem.parentElement;
             if(tasks.length !== 0){
@@ -626,6 +667,7 @@ function assignID(){
     listItems.forEach(function(item){
         item.id = index;
         listOfProjects[index].index = index;
+        saveDataToLocalStorage();
         index += 1;
     });
 };
@@ -635,9 +677,10 @@ function removeProjectFromInputting(listItem){
     removeProjectButton.addEventListener('click', function(){
         if(listItem.hasAttribute('id')){
             listOfProjects.splice(listItem.id, 1);
+            saveDataToLocalStorage();
             assignID();
         };
         projectList.removeChild(listItem)
-        console.log(JSON.parse(JSON.stringify(listOfProjects)));
     });
 };
+console.log(listOfProjects);
