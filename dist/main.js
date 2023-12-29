@@ -1,0 +1,1 @@
+(()=>{const e=document.querySelector("#content"),t=document.createElement("div");t.classList.add(t),t.textContent="K Hacer",e.appendChild(t)})();
